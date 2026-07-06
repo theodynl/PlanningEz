@@ -4,45 +4,47 @@
 
 **PlanningEz** is a modern planning software for project management, designed to simplify the creation of professional project plans while maintaining compatibility with Microsoft Project.
 
-- **Language:** Python 3.12+
-- **GUI Framework:** PySide6 (Qt)
-- **Architecture:** MVC/MVVM with clear separation of concerns
+- **Language:** Python 3.12+ (backend), TypeScript (frontend)
+- **Backend:** FastAPI over a UI-agnostic core
+- **Frontend:** React + TypeScript (Vite), custom SVG Gantt
+- **Architecture:** REST API + SPA; the core has no UI dependency
 - **Status:** v0.1.0 (MVP in development)
 
 ## Quick Start
 
 ```bash
-# Install dependencies
-pip install -r requirements.txt
+# Backend
+pip install -e .
+pytest                       # run tests
+python -m planningez         # start API on 127.0.0.1:8000 (serves frontend/dist if built)
 
-# Run tests
-pytest
-
-# Start development server
-python -m planningez.ui.main
+# Frontend (dev)
+cd frontend && npm install && npm run dev   # http://127.0.0.1:5173 (proxies /api)
 ```
 
 ## Project Structure
 
 ```
-planningez/
+planningez/                  # Backend (Python)
 ├── core/
-│   ├── models/              # Data models (Project, Task, Resource, etc.)
-│   ├── services/            # Business logic (PlanningEngine, CalendarService, etc.)
+│   ├── models/              # Data models (Project, Task, Resource, WBS, WorkPackage…)
+│   ├── services/            # PlanningEngine, PlanningGenerator, ProjectInitializer,
+│   │                        #   WorkPackageLibrary, Calendar/Resource services
 │   └── exceptions/          # Custom exceptions
-├── ui/
-│   ├── main.py             # Application entry point
-│   ├── main_window.py      # Main window implementation
-│   ├── widgets/            # Reusable UI components
-│   ├── dialogs/            # Dialog windows
-│   └── styles/             # Stylesheets and themes
-├── templates/              # Project templates (JSON)
-├── export/                 # Export functionality (MS Project XML, etc.)
-├── import_/                # Import functionality (CSV, Excel, etc.)
-├── resources/              # Static resources (icons, images)
-├── utils/                  # Utility modules (logging, etc.)
-└── tests/                  # Test suites
+├── api/                     # FastAPI app (app.py), request schemas, in-memory store
+├── export/                  # Exporter registry + JSON / MS Project / Primavera
+├── import_/                 # WBS (JSON/CSV/Excel/XML), MS Project, Primavera importers
+└── utils/                   # Serialization, logging
+
+frontend/                    # Frontend (React + TypeScript, Vite)
+└── src/                     # components/, api.ts, types.ts, App.tsx
+
+tests/                       # pytest suites (unit + API)
 ```
+
+The core (`planningez.core`, `planningez.import_`, `planningez.export`) is pure
+Python with **no web or UI dependency** — the FastAPI layer is a thin adapter
+over it, and any other frontend could be built on the same API.
 
 ## Key Concepts
 
@@ -154,22 +156,26 @@ planningez/
 ## Dependencies
 
 ### Core
-- **PySide6**: GUI framework
-- **pydantic**: Data validation
+- **fastapi** + **uvicorn**: Web API server
+- **pydantic**: Request validation
 - **python-dateutil**: Date utilities
 - **pytz**: Timezone handling
+
+### Frontend
+- **react** / **react-dom**: UI library
+- **vite**: Build tool / dev server
+- **typescript**: Typing
 
 ### Optional (Export/Import)
 - **lxml**: XML parsing
 - **openpyxl**: Excel support
-- **reportlab**: PDF generation
 
 ### Development
 - **pytest**: Testing
+- **httpx**: API test client
 - **black**: Code formatting
 - **ruff**: Linting
 - **mypy**: Type checking
-- **pyinstaller**: Build/packaging
 
 ## Common Tasks
 
@@ -183,10 +189,15 @@ planningez/
 2. Implement service class
 3. Update `planningez/core/services/__init__.py`
 
-### Create a new UI component
-1. Create file in `planningez/ui/widgets/`
-2. Extend `QWidget` or appropriate Qt class
-3. Use PySide6 patterns (signals, slots)
+### Add a new API endpoint
+1. Add the route to `planningez/api/app.py` (and a request schema in `schemas.py`)
+2. Serialize responses with `planningez.utils.serialization.to_dict`
+3. Cover it in `tests/unit/test_api.py`
+
+### Add a new frontend view
+1. Create a component in `frontend/src/components/`
+2. Call the backend through `frontend/src/api.ts`
+3. Wire it into `App.tsx`
 
 ### Write tests
 1. Create test file matching the module: `test_*.py`
@@ -208,7 +219,8 @@ Working on branch: `project-start`
 
 ## Resources
 
-- [PySide6 Documentation](https://doc.qt.io/qtforpython/)
+- [FastAPI Documentation](https://fastapi.tiangolo.com/)
+- [React Documentation](https://react.dev/)
 - [Python Type Hints](https://docs.python.org/3/library/typing.html)
 - [Pytest Documentation](https://docs.pytest.org/)
 - [Microsoft Project XML Schema](https://docs.microsoft.com/en-us/office-project/)

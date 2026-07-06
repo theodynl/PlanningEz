@@ -231,3 +231,7 @@ __marimo__/
 config/user_settings.json
 resources/user_templates/
 dist_bundle/
+
+# Frontend
+node_modules/
+frontend/dist/

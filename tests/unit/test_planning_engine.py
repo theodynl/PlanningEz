@@ -67,6 +67,31 @@ class TestPlanningEngine:
         # All tasks should be on the critical path
         assert len(critical_path) == 3
 
+    def test_full_chain_is_critical_across_weekends(self) -> None:
+        """A finish-to-start chain must be entirely critical regardless of weekends.
+
+        Regression test: the backward pass previously subtracted calendar days
+        while the forward pass counted working days, inventing phantom slack on
+        the last task of a chain when a weekend fell inside a duration.
+        """
+        # Start on a Monday so durations straddle a weekend.
+        project = Project(name="Chain", start_date=date(2024, 1, 1))
+        task_a = Task(name="A", duration=3)
+        task_b = Task(name="B", duration=5)  # spans the weekend
+        project.add_task(task_a)
+        project.add_task(task_b)
+        project.add_dependency(
+            Dependency(predecessor_id=task_a.task_id, successor_id=task_b.task_id)
+        )
+
+        engine = PlanningEngine(project)
+        engine.calculate()
+
+        assert task_a.total_slack == 0
+        assert task_b.total_slack == 0
+        assert task_a.on_critical_path
+        assert task_b.on_critical_path
+
     def test_parallel_tasks(self) -> None:
         """Test schedule with parallel tasks."""
         project = Project(name="Test Project", start_date=date(2024, 1, 1))

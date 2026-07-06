@@ -50,10 +50,12 @@ print(export.available_formats())  # ['json', 'msproject', 'primavera']
 
 ## 🚀 Démarrage rapide
 
+PlanningEz est une **webapp** : un backend **FastAPI** (Python) qui expose le cœur de planification en API REST, et un frontend **React + TypeScript** avec un diagramme de Gantt interactif.
+
 ### Prérequis
 
-- Python 3.12 ou supérieur
-- PySide6 (fourni avec les dépendances)
+- Python 3.12 ou supérieur (backend)
+- Node.js 18 ou supérieur (frontend)
 
 ### Installation
 
@@ -62,43 +64,75 @@ print(export.available_formats())  # ['json', 'msproject', 'primavera']
 git clone https://github.com/theodynl/planningez.git
 cd planningez
 
-# Créer un environnement virtuel
+# Backend : environnement virtuel + dépendances
 python -m venv venv
-source venv/bin/activate  # Linux/Mac
-# ou
-venv\Scripts\activate  # Windows
-
-# Installer les dépendances
-pip install -r requirements.txt
-
-# Installer en mode développement
+source venv/bin/activate        # Windows : venv\Scripts\activate
 pip install -e .
+
+# Frontend : dépendances Node
+cd frontend && npm install && cd ..
 ```
 
-### Lancer l'application
+### Lancer en développement (deux serveurs)
 
 ```bash
-python -m planningez.ui.main
+# Terminal 1 — API FastAPI (http://127.0.0.1:8000)
+python -m planningez
+
+# Terminal 2 — serveur de dev Vite (http://127.0.0.1:5173)
+cd frontend && npm run dev
 ```
+
+Ouvrez ensuite **http://127.0.0.1:5173** ; le serveur Vite relaie automatiquement les appels `/api` vers le backend.
+
+### Lancer en production (un seul serveur)
+
+```bash
+# Construire le frontend
+cd frontend && npm run build && cd ..
+
+# Lancer le serveur : il sert l'API ET le frontend compilé
+python -m planningez
+```
+
+Ouvrez **http://127.0.0.1:8000**. La documentation interactive de l'API est disponible sur **http://127.0.0.1:8000/docs**.
 
 ## 🏗️ Architecture
 
 ```
-planningez/
+planningez/                  # Backend Python
 ├── core/
-│   ├── models/          # Modèles de données (Project, Task, Resource, etc.)
-│   ├── services/        # Moteur de planification, calendriers, ressources
-│   └── exceptions/      # Exceptions personnalisées
-├── ui/
-│   ├── widgets/         # Composants réutilisables
-│   ├── dialogs/         # Dialogues
-│   └── styles/          # Styles et thèmes
-├── templates/           # Templates de projets
-├── export/              # Export Microsoft Project, Excel, PDF
-├── import_/             # Import CSV, Excel, MS Project
-├── resources/           # Ressources (icônes, images)
-└── tests/               # Tests unitaires et fonctionnels
+│   ├── models/              # Modèles (Project, Task, Resource, WBS, WorkPackage…)
+│   ├── services/            # Moteur de planification, génération, initialiseur, bibliothèque
+│   └── exceptions/          # Exceptions personnalisées
+├── api/                     # Application FastAPI (routes REST + store en mémoire)
+├── export/                  # Couche d'abstraction + JSON / MS Project / Primavera
+├── import_/                 # Import WBS (JSON/CSV/Excel/XML), MS Project, Primavera
+└── utils/                   # Sérialisation, logging
+
+frontend/                    # Frontend React + TypeScript (Vite)
+├── src/
+│   ├── components/          # GanttChart, TaskTable, NewProjectWizard
+│   ├── api.ts               # Client de l'API
+│   ├── types.ts             # Types partagés
+│   └── App.tsx              # Application principale
+└── dist/                    # Build de production (servi par FastAPI)
+
+tests/                       # Tests unitaires + API (pytest)
 ```
+
+### Principaux points d'entrée de l'API
+
+| Méthode | Route | Rôle |
+|---|---|---|
+| `GET`  | `/api/health` | Sonde de vie |
+| `GET`  | `/api/meta` | Énumérations (disciplines, formats d'export, modes…) |
+| `POST` | `/api/projects` | Créer un projet (modes : vide / WBS / Work Package / JSON) |
+| `POST` | `/api/projects/generate` | Générer un planning depuis des Work Packages |
+| `GET`  | `/api/projects/{id}/schedule` | Calculer le chemin critique et les dates |
+| `GET`  | `/api/projects/{id}/export/{format}` | Télécharger (json / msproject / primavera) |
+| `POST` | `/api/wbs/preview` | Prévisualiser un WBS importé |
+| `GET`  | `/api/work-packages` | Bibliothèque de Work Packages |
 
 ## 📋 Fonctionnalités planifiées (v0.1+)
 
@@ -153,20 +187,21 @@ pytest tests/functional/
 
 ## 📦 Déploiement
 
-### Build PyInstaller
+PlanningEz se déploie comme une application web classique :
 
 ```bash
-# Créer l'exécutable portable
-python build_bundle.py
+# 1. Construire le frontend
+cd frontend && npm run build && cd ..
 
-# Résultat dans dist_bundle/PlanningEz/
+# 2. Lancer le serveur (sert l'API et le frontend compilé)
+pip install -e .
+python -m planningez            # écoute sur PLANNINGEZ_HOST:PLANNINGEZ_PORT (défaut 127.0.0.1:8000)
 ```
 
-L'application finale sera fournie sous forme de dossier portable contenant :
-- `PlanningEz.exe`
-- Ressources
-- Templates
-- Configuration
+Pour un déploiement de production, servez l'application via un serveur ASGI
+(par ex. `uvicorn planningez.api.app:app --host 0.0.0.0 --port 8000`) derrière
+un reverse proxy (nginx, Caddy…). Le frontend compilé (`frontend/dist`) est
+servi automatiquement par FastAPI lorsqu'il est présent.
 
 ## 📚 Documentation
 

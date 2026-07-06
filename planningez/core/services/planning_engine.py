@@ -75,6 +75,37 @@ class PlanningEngine:
             if task.task_id not in visited:
                 visit(task.task_id)
 
+    def _add_working_days(self, start: date, duration: float) -> date:
+        """Return the finish date `duration` working days from `start` (inclusive).
+
+        The start day itself counts as the first working day when it is a
+        working day. This is the canonical duration convention used by both the
+        forward and backward passes so that early/late dates stay symmetric.
+        """
+        working_days = 0.0
+        current = start
+        while working_days < duration:
+            if self.calendar.is_working_day(current):
+                working_days += 1
+            if working_days < duration:
+                current += timedelta(days=1)
+        return current
+
+    def _subtract_working_days(self, finish: date, duration: float) -> date:
+        """Inverse of :meth:`_add_working_days`: the start for a given finish.
+
+        Steps backward from ``finish`` counting working days so that
+        ``_add_working_days(start, duration) == finish``.
+        """
+        working_days = 0.0
+        current = finish
+        while working_days < duration:
+            if self.calendar.is_working_day(current):
+                working_days += 1
+            if working_days < duration:
+                current -= timedelta(days=1)
+        return current
+
     def _calculate_forward_pass(self) -> None:
         """Calculate early start and early finish dates (forward pass)."""
         self._early_start.clear()
@@ -113,18 +144,10 @@ class PlanningEngine:
                 self._early_start[task_id] = max_finish
 
             # Calculate finish date (skip if it's a milestone with no duration)
-            if task.duration > 0 or task.duration != 0:
-                start = self._early_start[task_id]
-                working_days = 0
-                current_date = start
-
-                while working_days < task.duration:
-                    if self.calendar.is_working_day(current_date):
-                        working_days += 1
-                    if working_days < task.duration:
-                        current_date += timedelta(days=1)
-
-                self._early_finish[task_id] = current_date
+            if task.duration > 0:
+                self._early_finish[task_id] = self._add_working_days(
+                    self._early_start[task_id], task.duration
+                )
             else:
                 self._early_finish[task_id] = self._early_start[task_id]
 
@@ -174,11 +197,11 @@ class PlanningEngine:
                     min_start = min(min_start, adjusted_start)
                 self._late_finish[task_id] = min_start
 
-            # Calculate late start
+            # Calculate late start (working-day aware, symmetric with forward pass)
             task = self.project.get_task(task_id)
             if task and task.duration > 0:
-                self._late_start[task_id] = self._late_finish[task_id] - timedelta(
-                    days=task.duration
+                self._late_start[task_id] = self._subtract_working_days(
+                    self._late_finish[task_id], task.duration
                 )
             else:
                 self._late_start[task_id] = self._late_finish[task_id]
