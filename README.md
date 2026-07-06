@@ -14,10 +14,39 @@ Réduire drastiquement le temps de création d'un planning initial. PlanningEz f
 - **Calendriers flexibles** - Support multi-calendrier (entreprise, projet, équipe, sous-traitant)
 - **Gestion des ressources** - Assignation, disponibilité, coût, charge par ressource
 - **Templates réutilisables** - Créer et charger des modèles d'industrie (industriel, IT, pharma, etc.)
-- **Export Microsoft Project** - Compatible avec MS Project XML pour une intégration transparente
+- **Bibliothèque de Work Packages** - Blocs de planning autonomes, réutilisables, versionnés et partageables en JSON (Basic Engineering, HAZOP, FAT, SAT, Commissioning, etc.)
+- **Génération intelligente** - Assembler un planning complet en sélectionnant plusieurs Work Packages : WBS, tâches, jalons et dépendances générés automatiquement
+- **Import WBS multi-format** - JSON (prioritaire), CSV, Excel, XML avec détection automatique de la hiérarchie et numérotation
+- **Modes de démarrage** - Projet vide, template, Work Package, WBS existant, fichier Microsoft Project, Primavera P6 ou JSON PlanningEz
+- **Export Microsoft Project & Primavera P6** - XML compatibles, plus une couche d'abstraction extensible pour d'autres formats
 - **Calculs automatiques** - Chemin critique, marges totales et libres, durée projet
 - **Bibliothèque de jalons** - Kick-off, PDR, CDR, FAT, SAT, etc.
 - **Mode portable** - Exécution directe sans installation, toutes dépendances intégrées
+
+## 🧱 Work Packages, WBS, import et export
+
+```python
+from planningez.core.services import (
+    ProjectInitializer, StartMode, WorkPackageLibrary,
+    PlanningGenerator, GenerationRules, ConnectMode,
+)
+from planningez.import_ import WBSImporter
+from planningez import export
+
+# 1. Importer un WBS structuré (JSON prioritaire)
+wbs = WBSImporter().from_json('{"Projet": {"Engineering": {"Process": {}}}}')
+
+# 2. Assembler un planning à partir de Work Packages
+library = WorkPackageLibrary(storage_dir="~/planningez_library")
+packages = [library.get_by_code("BE-001"), library.get_by_code("FAT-001")]
+generator = PlanningGenerator(GenerationRules(connect_mode=ConnectMode.SEQUENTIAL))
+project = generator.generate(packages, project_name="Plant X")
+
+# 3. Exporter vers Microsoft Project, Primavera P6 ou JSON natif
+export.export_project(project, "msproject", "plant_x.xml")
+export.export_project(project, "primavera", "plant_x_p6.xml")
+print(export.available_formats())  # ['json', 'msproject', 'primavera']
+```
 
 ## 🚀 Démarrage rapide
 

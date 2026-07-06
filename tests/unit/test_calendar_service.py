@@ -85,12 +85,14 @@ class TestCalendarService:
             start_time=__import__("datetime").time(9, 0),
             end_time=__import__("datetime").time(18, 0),
             is_working_day=True,
+            lunch_start=None,
+            lunch_end=None,
         )
         service.set_working_hours(DayOfWeek.MONDAY, new_hours)
 
         monday = date(2024, 1, 1)
         hours = service.get_working_hours(monday)
-        assert hours == 9.0  # 9 hours
+        assert hours == 9.0  # 9 hours (no lunch break configured)
 
     def test_add_holiday(self, service: CalendarService) -> None:
         """Test adding a holiday."""
