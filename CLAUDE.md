@@ -90,22 +90,43 @@ planningez/
 
 **Phase 1 (v0.1 - MVP):**
 - Core data models ✅ (completed)
-- Basic UI framework
-- Task management
-- Simple Gantt view
-- MS Project export (XML)
+- Basic UI framework ✅ (completed - main window)
+- Exception hierarchy ✅ (completed)
+- Logging infrastructure ✅ (completed)
 
-**Phase 2 (v0.2):**
-- Dependency handling
-- Multi-calendar support
-- Resource management
-- Critical path algorithm
+**Phase 2 (v0.2):** 🚀 **IN PROGRESS**
+- PlanningEngine ✅ (completed)
+  - Forward pass calculation (early start/finish)
+  - Backward pass calculation (late start/finish)
+  - Slack calculation (total and free)
+  - Critical path identification
+  - Circular dependency detection
+- CalendarService ✅ (completed)
+  - Working day calculations
+  - Holiday management
+  - Working hours per day
+  - Range queries
+- ResourceService ✅ (completed)
+  - Resource allocation and workload
+  - Overallocation detection
+  - Cost calculations
+  - Utilization metrics
+  - Resource leveling (basic)
+- Unit tests ✅ (completed for all Phase 2 components)
 
-**Phase 3 (v0.3+):**
-- Templates and milestone library
-- Undo/Redo
-- Import capabilities
-- Advanced views
+**Phase 3 (v0.3):**
+- Gantt chart widget
+- Task management UI (create, edit, delete)
+- Resource allocation UI
+- MS Project XML export
+- Template system
+
+**Phase 4 (v0.4+):**
+- Import (CSV, Excel, MS Project)
+- Undo/Redo system
+- Advanced reporting
+- Dashboard with metrics
+- Milestone library
 
 ## Important Files
 
@@ -175,13 +196,14 @@ planningez/
 
 ## Branch Strategy
 
-Working on branch: `claude/missing-recent-repo-6c08j7`
+Working on branch: `project-start`
 
 **Branch naming:**
 - `feature/description`: New features
 - `fix/description`: Bug fixes
 - `refactor/description`: Code improvements
 - `docs/description`: Documentation
+- `project-start`: Initial project setup and Phase 2 implementation
 - `claude/*`: Claude Code development branches
 
 ## Resources
@@ -193,12 +215,26 @@ Working on branch: `claude/missing-recent-repo-6c08j7`
 
 ## Known Issues & TODOs
 
-- [ ] Implement PlanningEngine (critical path calculation)
-- [ ] Build complete UI framework
-- [ ] Add Gantt chart widget
-- [ ] Implement MS Project XML export
-- [ ] Add unit tests for all models
-- [ ] Create sample templates
+**Phase 2 Completed:**
+- ✅ Implement PlanningEngine (critical path calculation)
+- ✅ CalendarService with full working day support
+- ✅ ResourceService with workload and cost tracking
+- ✅ Unit tests for models and services
+
+**Phase 3 (Next):**
+- [ ] Build Gantt chart widget with interactivity
+- [ ] Create task management dialogs (create/edit/delete)
+- [ ] Implement resource allocation UI
+- [ ] Add MS Project XML export
+- [ ] Create sample project templates
+
+**Phase 4+:**
+- [ ] Import CSV/Excel/MS Project
+- [ ] Undo/Redo transaction system
+- [ ] Export to Excel with formatting
+- [ ] Dashboard with KPIs
+- [ ] Export to PDF reports
+- [ ] Dark mode support
 
 ## Contact & Questions
 
