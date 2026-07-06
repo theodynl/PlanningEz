@@ -216,3 +216,18 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# PlanningEz specific
+*.planez
+*.planez.bak
+config/user_settings.json
+resources/user_templates/
+dist_bundle/
