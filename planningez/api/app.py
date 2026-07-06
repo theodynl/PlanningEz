@@ -8,6 +8,8 @@ static files so the whole app runs from a single ``python -m planningez``.
 
 from __future__ import annotations
 
+import os
+import sys
 from pathlib import Path
 from typing import Any, Dict, List
 
@@ -391,6 +393,21 @@ def _resolve_packages(ids: List[str]):
 # --------------------------------------------------------------------------- #
 # Static frontend (served when built)
 # --------------------------------------------------------------------------- #
-_FRONTEND_DIST = Path(__file__).resolve().parents[2] / "frontend" / "dist"
+def _resolve_frontend_dist() -> Path:
+    """Locate the built frontend, working both from source and when frozen.
+
+    Resolution order: an explicit ``PLANNINGEZ_FRONTEND_DIST`` override, the
+    PyInstaller bundle directory (``sys._MEIPASS``) when running as a packaged
+    executable, then the in-repo ``frontend/dist``.
+    """
+    override = os.environ.get("PLANNINGEZ_FRONTEND_DIST")
+    if override:
+        return Path(override)
+    if getattr(sys, "frozen", False):  # packaged with PyInstaller
+        return Path(getattr(sys, "_MEIPASS", ".")) / "frontend" / "dist"
+    return Path(__file__).resolve().parents[2] / "frontend" / "dist"
+
+
+_FRONTEND_DIST = _resolve_frontend_dist()
 if _FRONTEND_DIST.is_dir():
     app.mount("/", StaticFiles(directory=str(_FRONTEND_DIST), html=True), name="frontend")

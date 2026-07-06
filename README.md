@@ -48,7 +48,32 @@ export.export_project(project, "primavera", "plant_x_p6.xml")
 print(export.available_formats())  # ['json', 'msproject', 'primavera']
 ```
 
-## 🚀 Démarrage rapide
+## 💾 Télécharger l'exécutable (sans Python ni Node)
+
+La façon la plus simple d'utiliser PlanningEz : télécharger l'exécutable autonome
+correspondant à votre système depuis la page
+**[Releases](https://github.com/theodynl/PlanningEz/releases)**.
+
+| Système | Fichier |
+|---|---|
+| Windows | `PlanningEz-windows.exe` |
+| macOS   | `PlanningEz-macos` |
+| Linux   | `PlanningEz-linux` |
+
+Il suffit de le lancer : l'application démarre un serveur local et ouvre
+automatiquement votre navigateur sur PlanningEz. Aucune installation de Python
+ou de Node n'est nécessaire.
+
+> **Note (binaires non signés)** : au premier lancement, Windows SmartScreen
+> (« Informations complémentaires → Exécuter quand même ») ou macOS Gatekeeper
+> (clic droit → « Ouvrir ») peut afficher un avertissement, car les
+> exécutables ne sont pas signés. Sous macOS/Linux, rendez le fichier
+> exécutable si besoin : `chmod +x PlanningEz-macos`.
+
+Les exécutables sont produits automatiquement par GitHub Actions
+(`.github/workflows/build-executables.yml`) sur chaque tag de version.
+
+## 🚀 Démarrage rapide (développement)
 
 PlanningEz est une **webapp** : un backend **FastAPI** (Python) qui expose le cœur de planification en API REST, et un frontend **React + TypeScript** avec un diagramme de Gantt interactif.
 

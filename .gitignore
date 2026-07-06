@@ -235,3 +235,10 @@ dist_bundle/
 # Frontend
 node_modules/
 frontend/dist/
+
+# PyInstaller build output
+build/
+dist/
+dist_exe/
+build_exe/
+*.pyc
