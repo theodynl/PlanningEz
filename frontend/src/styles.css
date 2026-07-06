@@ -501,3 +501,94 @@ button {
   font-size: 13px;
   cursor: pointer;
 }
+
+/* Interactive editing */
+.btn-danger {
+  background: #fff;
+  color: var(--critical);
+  border: 1px solid var(--critical);
+  border-radius: 6px;
+  padding: 8px 14px;
+  font-weight: 600;
+}
+.btn-danger:hover {
+  background: var(--critical);
+  color: #fff;
+}
+.spacer {
+  flex: 1;
+}
+.small {
+  font-size: 12px;
+}
+.checkbox-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 10px 0;
+  font-size: 14px;
+}
+.table-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.task-table tr.clickable {
+  cursor: pointer;
+}
+.task-table tr.clickable:hover td {
+  background: #eef5f1;
+}
+.row-del {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 18px;
+  line-height: 1;
+  padding: 0 6px;
+}
+.row-del:hover {
+  color: var(--critical);
+}
+.dep-section {
+  margin-top: 16px;
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+.dep-section h3 {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--muted);
+  margin: 0 0 8px;
+}
+.dep-list {
+  list-style: none;
+  margin: 0 0 8px;
+  padding: 0;
+}
+.dep-list li {
+  padding: 4px 0;
+  font-size: 13px;
+}
+.dep-type {
+  font-family: ui-monospace, monospace;
+  font-size: 11px;
+  background: #eef5f1;
+  color: var(--primary-dark);
+  padding: 1px 5px;
+  border-radius: 4px;
+  margin-right: 6px;
+}
+.dep-add {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.dep-add select {
+  flex: 1;
+  padding: 7px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}

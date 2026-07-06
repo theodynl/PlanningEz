@@ -2,6 +2,7 @@ import type { Task } from "../types";
 
 interface Props {
   tasks: Task[];
+  onSelect?: (task: Task) => void;
 }
 
 const ROW_H = 32;
@@ -17,7 +18,7 @@ function daysBetween(a: Date, b: Date): number {
   return Math.round((b.getTime() - a.getTime()) / 86400000);
 }
 
-export function GanttChart({ tasks }: Props) {
+export function GanttChart({ tasks, onSelect }: Props) {
   const scheduled = tasks.filter((t) => t.start_date);
   if (scheduled.length === 0) {
     return (
@@ -81,7 +82,11 @@ export function GanttChart({ tasks }: Props) {
           const isSummary = task.task_type === "summary";
 
           return (
-            <g key={task.task_id}>
+            <g
+              key={task.task_id}
+              onClick={() => onSelect?.(task)}
+              style={{ cursor: onSelect ? "pointer" : "default" }}
+            >
               <rect
                 x={0}
                 y={y}

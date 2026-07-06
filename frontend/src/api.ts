@@ -2,8 +2,29 @@ import type {
   Meta,
   Project,
   ProjectSummary,
+  Task,
+  Dependency,
   WorkPackageSummary,
 } from "./types";
+
+export interface TaskInput {
+  name: string;
+  duration?: number;
+  task_type?: string;
+  parent_id?: string | null;
+  responsible?: string | null;
+  progress?: number;
+  is_milestone?: boolean;
+}
+
+export interface TaskPatch {
+  name?: string;
+  duration?: number;
+  status?: string;
+  progress?: number;
+  responsible?: string | null;
+  parent_id?: string | null;
+}
 
 const BASE = "/api";
 
@@ -43,6 +64,32 @@ export const api = {
     }),
 
   schedule: (id: string) => request<Project>(`/projects/${id}/schedule`),
+
+  addTask: (projectId: string, body: TaskInput) =>
+    request<Task>(`/projects/${projectId}/tasks`, {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+
+  updateTask: (projectId: string, taskId: string, body: TaskPatch) =>
+    request<Task>(`/projects/${projectId}/tasks/${taskId}`, {
+      method: "PATCH",
+      body: JSON.stringify(body),
+    }),
+
+  deleteTask: (projectId: string, taskId: string) =>
+    request<{ status: string }>(`/projects/${projectId}/tasks/${taskId}`, {
+      method: "DELETE",
+    }),
+
+  addDependency: (
+    projectId: string,
+    body: { predecessor_id: string; successor_id: string; dependency_type?: string; lag?: number }
+  ) =>
+    request<Dependency>(`/projects/${projectId}/dependencies`, {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
 
   previewWbs: (format: string, content: string) =>
     request<{ node_count: number; depth: number }>("/wbs/preview", {

@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { api } from "./api";
 import type { Meta, Project, ProjectSummary, WorkPackageSummary } from "./types";
+import type { Task } from "./types";
 import { GanttChart } from "./components/GanttChart";
 import { TaskTable } from "./components/TaskTable";
+import { TaskEditor } from "./components/TaskEditor";
 import { NewProjectWizard } from "./components/NewProjectWizard";
 
 type Tab = "gantt" | "tasks";
@@ -14,6 +16,8 @@ export function App() {
   const [current, setCurrent] = useState<Project | null>(null);
   const [tab, setTab] = useState<Tab>("gantt");
   const [wizardOpen, setWizardOpen] = useState(false);
+  const [editorOpen, setEditorOpen] = useState(false);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const refreshLists = async () => {
@@ -51,6 +55,38 @@ export function App() {
     if (!current) return;
     try {
       setCurrent(await api.schedule(current.project_id));
+    } catch (e) {
+      setError((e as Error).message);
+    }
+  };
+
+  // Reload the project after an edit and re-run the schedule so the Gantt and
+  // slack/critical-path indicators stay in sync.
+  const reloadCurrent = async () => {
+    if (!current) return;
+    try {
+      setCurrent(await api.schedule(current.project_id));
+    } catch (e) {
+      setError((e as Error).message);
+    }
+  };
+
+  const openAddTask = () => {
+    setEditingTask(null);
+    setEditorOpen(true);
+  };
+
+  const openEditTask = (task: Task) => {
+    setEditingTask(task);
+    setEditorOpen(true);
+  };
+
+  const deleteTask = async (task: Task) => {
+    if (!current) return;
+    if (!confirm(`Supprimer la tâche « ${task.name} » ?`)) return;
+    try {
+      await api.deleteTask(current.project_id, task.task_id);
+      await reloadCurrent();
     } catch (e) {
       setError((e as Error).message);
     }
@@ -170,9 +206,14 @@ export function App() {
               </div>
 
               {tab === "gantt" ? (
-                <GanttChart tasks={current.tasks} />
+                <GanttChart tasks={current.tasks} onSelect={openEditTask} />
               ) : (
-                <TaskTable tasks={current.tasks} />
+                <TaskTable
+                  tasks={current.tasks}
+                  onEdit={openEditTask}
+                  onAdd={openAddTask}
+                  onDelete={deleteTask}
+                />
               )}
             </>
           )}
@@ -184,6 +225,16 @@ export function App() {
           workPackages={workPackages}
           onCreated={onCreated}
           onClose={() => setWizardOpen(false)}
+        />
+      )}
+
+      {editorOpen && current && (
+        <TaskEditor
+          project={current}
+          task={editingTask}
+          meta={meta}
+          onChanged={reloadCurrent}
+          onClose={() => setEditorOpen(false)}
         />
       )}
     </div>
