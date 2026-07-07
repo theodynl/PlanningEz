@@ -8,6 +8,8 @@ single-user planning assistant; persistence happens through JSON import/export.
 
 from __future__ import annotations
 
+import os
+from pathlib import Path
 from typing import Dict, List, Optional
 
 from planningez.core.models.project import Project
@@ -27,10 +29,20 @@ class AppStore:
     """Process-local store of projects and the Work Package library."""
 
     def __init__(self) -> None:
-        """Initialize an empty project map and a seeded library."""
+        """Initialize an empty project map and a disk-backed library.
+
+        The Work Package library is persisted under ``PLANNINGEZ_DATA_DIR`` (or
+        ``~/.planningez`` by default) so a user's additions, edits and deletions
+        survive restarts of the app. The example packages are seeded only on the
+        very first run (when the store is empty).
+        """
         self.projects: Dict[str, Project] = {}
-        self.library = WorkPackageLibrary()
-        self._seed_library()
+        data_dir = Path(
+            os.environ.get("PLANNINGEZ_DATA_DIR", Path.home() / ".planningez")
+        )
+        self.library = WorkPackageLibrary(storage_dir=data_dir / "work_packages")
+        if len(self.library) == 0:
+            self._seed_library()
 
     # ------------------------------------------------------------------ #
     # Projects

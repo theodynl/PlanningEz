@@ -1,8 +1,18 @@
 """Pytest configuration and shared fixtures."""
 
-import pytest
-from datetime import date
-from planningez.core.models import Project, Calendar
+import os
+import tempfile
+
+# Isolate the persistent Work Package library in a throwaway directory so tests
+# never touch the developer's real ~/.planningez data. Set before any test
+# imports the API store (which reads this at import time).
+os.environ.setdefault(
+    "PLANNINGEZ_DATA_DIR", tempfile.mkdtemp(prefix="planningez-test-")
+)
+
+import pytest  # noqa: E402
+from datetime import date  # noqa: E402
+from planningez.core.models import Project, Calendar  # noqa: E402
 
 
 @pytest.fixture

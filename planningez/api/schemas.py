@@ -94,6 +94,13 @@ class WBSPreviewRequest(BaseModel):
 
 
 class WorkPackageImportRequest(BaseModel):
-    """Import/create a Work Package from a JSON document."""
+    """Create/import or update a Work Package from a JSON document.
+
+    When ``chain_tasks`` is true, the server (re)builds sequential finish-to-start
+    dependencies between consecutive non-milestone tasks — convenient when
+    editing a package through the form UI, which does not expose a dependency
+    editor.
+    """
 
     document: Dict[str, Any]
+    chain_tasks: bool = False

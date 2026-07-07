@@ -173,10 +173,51 @@ button {
 .wp-list li {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 5px 4px;
+  gap: 4px;
   border-bottom: 1px solid var(--border);
   font-size: 13px;
+}
+.wp-lib-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.btn-link {
+  background: none;
+  border: none;
+  color: var(--primary);
+  font-weight: 600;
+  font-size: 12px;
+  padding: 4px 2px;
+}
+.btn-link:hover {
+  text-decoration: underline;
+}
+.wp-item {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  text-align: left;
+  padding: 5px 4px;
+  overflow: hidden;
+}
+.wp-item:hover {
+  background: #f4f8f6;
+  border-radius: 4px;
+}
+.wp-del {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1;
+  padding: 0 4px;
+}
+.wp-del:hover {
+  color: var(--critical);
 }
 .wp-code {
   font-family: ui-monospace, monospace;
@@ -427,11 +468,82 @@ button {
   color: var(--muted);
 }
 .field input,
-.field select {
+.field select,
+.field textarea {
   padding: 9px 10px;
   border: 1px solid var(--border);
   border-radius: 6px;
   font-size: 14px;
+  font-family: inherit;
+}
+.field textarea {
+  resize: vertical;
+}
+
+/* Work Package editor */
+.wp-modal {
+  width: 720px;
+}
+.wp-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.wp-section {
+  margin: 14px 0;
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+.wp-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.wp-section-head h3 {
+  margin: 0;
+  font-size: 13px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.btn-sm {
+  padding: 4px 10px;
+  font-size: 12px;
+}
+.wp-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+.wp-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.wp-row-name {
+  flex: 1;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 13px;
+}
+.wp-row-dur {
+  width: 70px;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 13px;
+}
+.wp-row-ms {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--muted);
+  white-space: nowrap;
 }
 .mode-tabs {
   display: flex;

@@ -16,7 +16,7 @@ Réduire drastiquement le temps de création d'un planning initial. PlanningEz f
 - **Calendriers flexibles** - Support multi-calendrier (entreprise, projet, équipe, sous-traitant)
 - **Gestion des ressources** - Assignation, disponibilité, coût, charge par ressource
 - **Templates réutilisables** - Créer et charger des modèles d'industrie (industriel, IT, pharma, etc.)
-- **Bibliothèque de Work Packages** - Blocs de planning autonomes, réutilisables, versionnés et partageables en JSON (Basic Engineering, HAZOP, FAT, SAT, Commissioning, etc.)
+- **Bibliothèque de Work Packages** - Blocs de planning autonomes, réutilisables, versionnés et partageables en JSON (Basic Engineering, HAZOP, FAT, SAT, Commissioning, etc.) ; création / modification / suppression depuis l'interface, **persistée sur disque** (survit au redémarrage)
 - **Génération intelligente** - Assembler un planning complet en sélectionnant plusieurs Work Packages : WBS, tâches, jalons et dépendances générés automatiquement
 - **Import WBS multi-format** - JSON (prioritaire), CSV, Excel, XML avec détection automatique de la hiérarchie et numérotation
 - **Modes de démarrage** - Projet vide, template, Work Package, WBS existant, fichier Microsoft Project, Primavera P6 ou JSON PlanningEz
