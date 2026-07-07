@@ -139,6 +139,31 @@ def test_dependency_creation_and_cycle_detection(client):
     assert resp.status_code == 409
 
 
+def test_update_task_constraint_and_duration(client):
+    project = client.post("/api/projects", json={"mode": "empty", "name": "Drag"}).json()
+    pid = project["project_id"]
+    task = client.post(f"/api/projects/{pid}/tasks", json={"name": "T", "duration": 2}).json()
+    tid = task["task_id"]
+
+    # Resize (duration) + move (constraint_date) as the Gantt drag would.
+    r1 = client.patch(f"/api/projects/{pid}/tasks/{tid}", json={"duration": 6})
+    assert r1.status_code == 200 and r1.json()["duration"] == 6
+
+    r2 = client.patch(
+        f"/api/projects/{pid}/tasks/{tid}", json={"constraint_date": "2030-06-01"}
+    )
+    assert r2.status_code == 200 and r2.json()["constraint_date"] == "2030-06-01"
+
+    # The constraint drives the scheduled start date.
+    scheduled = client.get(f"/api/projects/{pid}/schedule").json()
+    t = next(x for x in scheduled["tasks"] if x["task_id"] == tid)
+    assert t["start_date"] == "2030-06-01"
+
+    # Clearing the constraint removes it.
+    r3 = client.patch(f"/api/projects/{pid}/tasks/{tid}", json={"clear_constraint": True})
+    assert r3.status_code == 200 and r3.json()["constraint_date"] is None
+
+
 def test_export_endpoints(client):
     project = client.post("/api/projects", json={"mode": "empty", "name": "Exp"}).json()
     pid = project["project_id"]

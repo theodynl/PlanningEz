@@ -8,6 +8,7 @@ export interface Task {
   progress: number;
   start_date: string | null;
   end_date: string | null;
+  constraint_date: string | null;
   parent_id: string | null;
   responsible: string | null;
   is_milestone: boolean;

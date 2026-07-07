@@ -92,6 +92,32 @@ class TestPlanningEngine:
         assert task_a.on_critical_path
         assert task_b.on_critical_path
 
+    def test_constraint_date_pushes_start_later(self) -> None:
+        """A start-no-earlier-than constraint delays a task's early start."""
+        project = Project(name="Constraint", start_date=date(2024, 1, 1))
+        task = Task(name="Constrained", duration=2, constraint_date=date(2024, 1, 10))
+        project.add_task(task)
+
+        PlanningEngine(project).calculate()
+
+        # Without the constraint the task would start on 2024-01-01.
+        assert task.start_date == date(2024, 1, 10)
+
+    def test_constraint_never_precedes_predecessor(self) -> None:
+        """A constraint earlier than a predecessor's finish is ignored."""
+        project = Project(name="Constraint2", start_date=date(2024, 1, 1))
+        a = Task(name="A", duration=5)
+        b = Task(name="B", duration=2, constraint_date=date(2024, 1, 2))
+        project.add_task(a)
+        project.add_task(b)
+        project.add_dependency(Dependency(predecessor_id=a.task_id, successor_id=b.task_id))
+
+        PlanningEngine(project).calculate()
+
+        # B cannot start before A finishes, regardless of its earlier constraint.
+        assert b.start_date is not None and a.end_date is not None
+        assert b.start_date >= a.end_date
+
     def test_parallel_tasks(self) -> None:
         """Test schedule with parallel tasks."""
         project = Project(name="Test Project", start_date=date(2024, 1, 1))

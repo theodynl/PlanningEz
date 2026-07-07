@@ -24,6 +24,8 @@ export interface TaskPatch {
   progress?: number;
   responsible?: string | null;
   parent_id?: string | null;
+  constraint_date?: string | null;
+  clear_constraint?: boolean;
 }
 
 const BASE = "/api";

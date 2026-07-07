@@ -47,6 +47,10 @@ class Task:
     task_type: TaskType = TaskType.TASK
     start_date: Optional[date] = None
     end_date: Optional[date] = None
+    # Manual "start no earlier than" constraint (e.g. set by dragging in the
+    # Gantt). Acts as a floor for the computed early start; distinct from the
+    # engine-computed ``start_date``.
+    constraint_date: Optional[date] = None
     parent_id: Optional[str] = None
     responsible: Optional[str] = None
     color: str = "#2E7D5A"

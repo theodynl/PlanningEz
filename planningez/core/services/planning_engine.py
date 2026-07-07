@@ -134,13 +134,17 @@ class PlanningEngine:
             # Calculate start date
             incoming, _ = self.project.get_dependencies_for_task(task_id)
             if not incoming:
-                self._early_start[task_id] = task.start_date or project_start
+                self._early_start[task_id] = task.constraint_date or project_start
             else:
                 max_finish = project_start
                 for dep in incoming:
                     pred_finish = self._early_finish.get(dep.predecessor_id, project_start)
                     adjusted_finish = pred_finish + timedelta(days=dep.lag)
                     max_finish = max(max_finish, adjusted_finish)
+                # A manual "start no earlier than" constraint pushes the task
+                # later but never earlier than its predecessors allow.
+                if task.constraint_date:
+                    max_finish = max(max_finish, task.constraint_date)
                 self._early_start[task_id] = max_finish
 
             # Calculate finish date (skip if it's a milestone with no duration)

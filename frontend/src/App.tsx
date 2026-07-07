@@ -92,6 +92,23 @@ export function App() {
     }
   };
 
+  // Inline table edits and Gantt drag/resize all funnel through here.
+  const patchTask = async (task: Task, patch: Parameters<typeof api.updateTask>[2]) => {
+    if (!current) return;
+    try {
+      await api.updateTask(current.project_id, task.task_id, patch);
+      await reloadCurrent();
+    } catch (e) {
+      setError((e as Error).message);
+    }
+  };
+
+  const moveTask = (task: Task, newStartISO: string) =>
+    patchTask(task, { constraint_date: newStartISO });
+
+  const resizeTask = (task: Task, newDuration: number) =>
+    patchTask(task, { duration: newDuration });
+
   const removeProject = async (id: string) => {
     await api.deleteProject(id);
     if (current?.project_id === id) setCurrent(null);
@@ -206,13 +223,19 @@ export function App() {
               </div>
 
               {tab === "gantt" ? (
-                <GanttChart tasks={current.tasks} onSelect={openEditTask} />
+                <GanttChart
+                  tasks={current.tasks}
+                  onSelect={openEditTask}
+                  onMove={moveTask}
+                  onResize={resizeTask}
+                />
               ) : (
                 <TaskTable
                   tasks={current.tasks}
                   onEdit={openEditTask}
                   onAdd={openAddTask}
                   onDelete={deleteTask}
+                  onInline={patchTask}
                 />
               )}
             </>

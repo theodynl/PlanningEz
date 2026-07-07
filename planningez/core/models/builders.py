@@ -43,7 +43,13 @@ def build_task(data: Dict[str, Any]) -> Task:
         payload["priority"] = TaskPriority(payload["priority"])
     if "task_type" in payload and payload["task_type"] is not None:
         payload["task_type"] = TaskType(payload["task_type"])
-    for date_field in ("start_date", "end_date", "actual_start_date", "actual_end_date"):
+    for date_field in (
+        "start_date",
+        "end_date",
+        "constraint_date",
+        "actual_start_date",
+        "actual_end_date",
+    ):
         if date_field in payload:
             payload[date_field] = parse_date(payload[date_field])
     # Metadata timestamps are recreated by the dataclass defaults.

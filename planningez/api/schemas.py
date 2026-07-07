@@ -49,7 +49,12 @@ class TaskCreateRequest(BaseModel):
 
 
 class TaskUpdateRequest(BaseModel):
-    """Partial update of a task (only provided fields change)."""
+    """Partial update of a task (only provided fields change).
+
+    ``constraint_date`` uses a sentinel so it can be *cleared*: omit the field
+    to leave it unchanged, pass ``null`` to remove the constraint, or an ISO
+    date string to set a "start no earlier than" constraint.
+    """
 
     name: Optional[str] = None
     duration: Optional[float] = None
@@ -57,6 +62,8 @@ class TaskUpdateRequest(BaseModel):
     progress: Optional[float] = None
     responsible: Optional[str] = None
     parent_id: Optional[str] = None
+    constraint_date: Optional[str] = Field(default=None)
+    clear_constraint: bool = False
 
 
 class DependencyCreateRequest(BaseModel):

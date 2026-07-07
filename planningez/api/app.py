@@ -33,7 +33,7 @@ from planningez.core.services.planning_generator import (
 from planningez.core.services.project_initializer import ProjectInitializer, StartMode
 from planningez.import_.wbs_importer import WBSImporter
 from planningez.core.exceptions import PlanningEzException, CircularDependencyError
-from planningez.utils.serialization import to_dict, to_json
+from planningez.utils.serialization import to_dict, to_json, parse_date
 from planningez import export as export_pkg
 
 from planningez.api.store import store
@@ -229,6 +229,10 @@ def update_task(project_id: str, task_id: str, req: TaskUpdateRequest) -> Dict[s
         task.responsible = req.responsible
     if req.parent_id is not None:
         task.parent_id = req.parent_id
+    if req.clear_constraint:
+        task.constraint_date = None
+    elif req.constraint_date is not None:
+        task.constraint_date = parse_date(req.constraint_date)
     return to_dict(task)
 
 

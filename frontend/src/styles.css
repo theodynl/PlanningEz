@@ -321,6 +321,13 @@ button {
 .gantt-milestone {
   fill: var(--secondary);
 }
+.gantt-resize-handle {
+  fill: rgba(255, 255, 255, 0.01);
+}
+.gantt-bar:hover,
+.gantt-milestone:hover {
+  filter: brightness(1.08);
+}
 
 /* Task table */
 .table-scroll {
@@ -534,19 +541,31 @@ button {
   gap: 12px;
   margin-bottom: 10px;
 }
-.task-table tr.clickable {
-  cursor: pointer;
+.task-table tbody tr:hover td {
+  background: #f4f8f6;
 }
-.task-table tr.clickable:hover td {
-  background: #eef5f1;
+.task-table td[onDoubleClick],
+.task-table tbody td {
+  cursor: default;
 }
+.row-actions {
+  white-space: nowrap;
+  text-align: right;
+}
+.row-edit,
 .row-del {
   background: none;
   border: none;
   color: var(--muted);
-  font-size: 18px;
+  font-size: 16px;
   line-height: 1;
-  padding: 0 6px;
+  padding: 0 5px;
+}
+.row-edit:hover {
+  color: var(--primary);
+}
+.row-del {
+  font-size: 18px;
 }
 .row-del:hover {
   color: var(--critical);
@@ -591,4 +610,11 @@ button {
   padding: 7px 8px;
   border: 1px solid var(--border);
   border-radius: 6px;
+}
+.inline-input {
+  padding: 3px 6px;
+  border: 1px solid var(--primary);
+  border-radius: 4px;
+  font-size: 13px;
+  font-family: inherit;
 }
