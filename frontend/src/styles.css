@@ -618,3 +618,67 @@ button {
   font-size: 13px;
   font-family: inherit;
 }
+
+/* Context menu */
+.context-menu {
+  position: fixed;
+  z-index: 100;
+  min-width: 210px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.18);
+  padding: 5px;
+  font-size: 13px;
+}
+.ctx-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 7px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  color: var(--text);
+  white-space: nowrap;
+}
+.ctx-item:hover {
+  background: #eef5f1;
+}
+.ctx-item.disabled {
+  color: #c2c9c5;
+  cursor: default;
+}
+.ctx-item.disabled:hover {
+  background: none;
+}
+.ctx-item.danger {
+  color: var(--critical);
+}
+.ctx-item.danger:hover {
+  background: #fef2f2;
+}
+.ctx-arrow {
+  color: var(--muted);
+  font-size: 11px;
+}
+.ctx-separator {
+  height: 1px;
+  background: var(--border);
+  margin: 5px 6px;
+}
+.context-submenu {
+  position: absolute;
+  left: 100%;
+  top: -5px;
+  margin-left: 2px;
+  min-width: 190px;
+  max-height: 320px;
+  overflow-y: auto;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.18);
+  padding: 5px;
+}

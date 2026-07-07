@@ -164,6 +164,29 @@ def test_update_task_constraint_and_duration(client):
     assert r3.status_code == 200 and r3.json()["constraint_date"] is None
 
 
+def test_task_parent_operations(client):
+    project = client.post("/api/projects", json={"mode": "empty", "name": "Hier"}).json()
+    pid = project["project_id"]
+    a = client.post(f"/api/projects/{pid}/tasks", json={"name": "A", "duration": 1}).json()
+    b = client.post(f"/api/projects/{pid}/tasks", json={"name": "B", "duration": 1}).json()
+
+    # Make B a child of A.
+    r = client.patch(f"/api/projects/{pid}/tasks/{b['task_id']}", json={"parent_id": a["task_id"]})
+    assert r.status_code == 200 and r.json()["parent_id"] == a["task_id"]
+
+    # A cannot become a child of its own descendant B (cycle).
+    r2 = client.patch(f"/api/projects/{pid}/tasks/{a['task_id']}", json={"parent_id": b["task_id"]})
+    assert r2.status_code == 400
+
+    # A task cannot be its own parent.
+    r3 = client.patch(f"/api/projects/{pid}/tasks/{a['task_id']}", json={"parent_id": a["task_id"]})
+    assert r3.status_code == 400
+
+    # Clearing the parent returns B to the root.
+    r4 = client.patch(f"/api/projects/{pid}/tasks/{b['task_id']}", json={"clear_parent": True})
+    assert r4.status_code == 200 and r4.json()["parent_id"] is None
+
+
 def test_export_endpoints(client):
     project = client.post("/api/projects", json={"mode": "empty", "name": "Exp"}).json()
     pid = project["project_id"]

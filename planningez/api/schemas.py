@@ -62,6 +62,7 @@ class TaskUpdateRequest(BaseModel):
     progress: Optional[float] = None
     responsible: Optional[str] = None
     parent_id: Optional[str] = None
+    clear_parent: bool = False
     constraint_date: Optional[str] = Field(default=None)
     clear_constraint: bool = False
 

@@ -6,6 +6,8 @@ import { GanttChart } from "./components/GanttChart";
 import { TaskTable } from "./components/TaskTable";
 import { TaskEditor } from "./components/TaskEditor";
 import { NewProjectWizard } from "./components/NewProjectWizard";
+import { ContextMenu, type MenuItem } from "./components/ContextMenu";
+import { descendantIds, candidateParents } from "./hierarchy";
 
 type Tab = "gantt" | "tasks";
 
@@ -18,6 +20,7 @@ export function App() {
   const [wizardOpen, setWizardOpen] = useState(false);
   const [editorOpen, setEditorOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [menu, setMenu] = useState<{ task: Task; x: number; y: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const refreshLists = async () => {
@@ -108,6 +111,75 @@ export function App() {
 
   const resizeTask = (task: Task, newDuration: number) =>
     patchTask(task, { duration: newDuration });
+
+  // --- Hierarchy actions (context menu) ---
+  const setParent = (task: Task, parentId: string | null) =>
+    patchTask(task, parentId ? { parent_id: parentId } : { clear_parent: true });
+
+  const addSubtask = async (parent: Task) => {
+    if (!current) return;
+    try {
+      await api.addTask(current.project_id, {
+        name: "Nouvelle sous-tâche",
+        duration: 1,
+        parent_id: parent.task_id,
+      });
+      await reloadCurrent();
+    } catch (e) {
+      setError((e as Error).message);
+    }
+  };
+
+  const indentTask = (task: Task) => {
+    if (!current) return;
+    const idx = current.tasks.findIndex((t) => t.task_id === task.task_id);
+    const prev = current.tasks[idx - 1];
+    if (prev && !descendantIds(current.tasks, task.task_id).has(prev.task_id)) {
+      setParent(task, prev.task_id);
+    }
+  };
+
+  const outdentTask = (task: Task) => {
+    if (!current || !task.parent_id) return;
+    const parent = current.tasks.find((t) => t.task_id === task.parent_id);
+    setParent(task, parent?.parent_id ?? null);
+  };
+
+  const openContext = (task: Task, x: number, y: number) => setMenu({ task, x, y });
+
+  const buildMenu = (task: Task): MenuItem[] => {
+    if (!current) return [];
+    const idx = current.tasks.findIndex((t) => t.task_id === task.task_id);
+    const prev = current.tasks[idx - 1];
+    const forbidden = descendantIds(current.tasks, task.task_id);
+    const canIndent = !!prev && !forbidden.has(prev.task_id) && prev.task_id !== task.parent_id;
+    const parents = candidateParents(current.tasks, task).filter(
+      (p) => p.task_id !== task.parent_id
+    );
+    return [
+      { label: "Modifier…", onClick: () => openEditTask(task) },
+      { label: "Ajouter une sous-tâche", onClick: () => addSubtask(task) },
+      { label: "", separator: true },
+      { label: "Indenter (rendre fille)", onClick: () => indentTask(task), disabled: !canIndent },
+      { label: "Désindenter", onClick: () => outdentTask(task), disabled: !task.parent_id },
+      {
+        label: "Définir la tâche mère",
+        submenu: [
+          {
+            label: "— Aucune (racine) —",
+            onClick: () => setParent(task, null),
+            disabled: !task.parent_id,
+          },
+          ...parents.map((p) => ({
+            label: p.name,
+            onClick: () => setParent(task, p.task_id),
+          })),
+        ],
+      },
+      { label: "", separator: true },
+      { label: "Supprimer", danger: true, onClick: () => deleteTask(task) },
+    ];
+  };
 
   const removeProject = async (id: string) => {
     await api.deleteProject(id);
@@ -228,6 +300,7 @@ export function App() {
                   onSelect={openEditTask}
                   onMove={moveTask}
                   onResize={resizeTask}
+                  onContext={openContext}
                 />
               ) : (
                 <TaskTable
@@ -236,6 +309,7 @@ export function App() {
                   onAdd={openAddTask}
                   onDelete={deleteTask}
                   onInline={patchTask}
+                  onContext={openContext}
                 />
               )}
             </>
@@ -258,6 +332,15 @@ export function App() {
           meta={meta}
           onChanged={reloadCurrent}
           onClose={() => setEditorOpen(false)}
+        />
+      )}
+
+      {menu && current && (
+        <ContextMenu
+          x={menu.x}
+          y={menu.y}
+          items={buildMenu(menu.task)}
+          onClose={() => setMenu(null)}
         />
       )}
     </div>

@@ -24,6 +24,7 @@ export interface TaskPatch {
   progress?: number;
   responsible?: string | null;
   parent_id?: string | null;
+  clear_parent?: boolean;
   constraint_date?: string | null;
   clear_constraint?: boolean;
 }

@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import type { Task } from "../types";
+import { depthOf } from "../hierarchy";
 
 interface Props {
   tasks: Task[];
   onSelect?: (task: Task) => void;
   onMove?: (task: Task, newStartISO: string) => void;
   onResize?: (task: Task, newDuration: number) => void;
+  onContext?: (task: Task, x: number, y: number) => void;
 }
 
 const ROW_H = 32;
@@ -34,7 +36,7 @@ interface DragState {
   deltaDays: number;
 }
 
-export function GanttChart({ tasks, onSelect, onMove, onResize }: Props) {
+export function GanttChart({ tasks, onSelect, onMove, onResize, onContext }: Props) {
   const [drag, setDrag] = useState<DragState | null>(null);
   const dragRef = useRef<DragState | null>(null);
   const didDragRef = useRef(false);
@@ -147,7 +149,7 @@ export function GanttChart({ tasks, onSelect, onMove, onResize }: Props) {
           const y = HEADER_H + i * ROW_H;
           const start = parseDate(task.start_date);
           const end = parseDate(task.end_date ?? task.start_date);
-          const indent = task.parent_id ? 16 : 0;
+          const indent = depthOf(tasks, task) * 14;
           const isSummary = task.task_type === "summary";
           const isMilestone = task.is_milestone || task.task_type === "milestone";
           const draggable = !isSummary && (!!onMove || !!onResize);
@@ -162,6 +164,12 @@ export function GanttChart({ tasks, onSelect, onMove, onResize }: Props) {
                   return;
                 }
                 onSelect?.(task);
+              }}
+              onContextMenu={(e) => {
+                if (onContext) {
+                  e.preventDefault();
+                  onContext(task, e.clientX, e.clientY);
+                }
               }}
               style={{ cursor: "pointer" }}
             >

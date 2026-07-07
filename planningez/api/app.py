@@ -227,13 +227,40 @@ def update_task(project_id: str, task_id: str, req: TaskUpdateRequest) -> Dict[s
         task.update_progress(req.progress)
     if req.responsible is not None:
         task.responsible = req.responsible
-    if req.parent_id is not None:
+    if req.clear_parent:
+        task.parent_id = None
+    elif req.parent_id is not None:
+        if req.parent_id == task_id:
+            raise HTTPException(status_code=400, detail="A task cannot be its own parent")
+        if project.get_task(req.parent_id) is None:
+            raise HTTPException(status_code=404, detail="Parent task not found")
+        if req.parent_id in _descendant_ids(project, task_id):
+            raise HTTPException(
+                status_code=400, detail="Cannot move a task under one of its descendants"
+            )
         task.parent_id = req.parent_id
     if req.clear_constraint:
         task.constraint_date = None
     elif req.constraint_date is not None:
         task.constraint_date = parse_date(req.constraint_date)
     return to_dict(task)
+
+
+def _descendant_ids(project: Project, task_id: str) -> set[str]:
+    """Return the ids of all descendants of ``task_id`` (via parent links)."""
+    children: Dict[str, List[str]] = {}
+    for t in project.tasks:
+        if t.parent_id:
+            children.setdefault(t.parent_id, []).append(t.task_id)
+    result: set[str] = set()
+    stack = list(children.get(task_id, []))
+    while stack:
+        current = stack.pop()
+        if current in result:
+            continue
+        result.add(current)
+        stack.extend(children.get(current, []))
+    return result
 
 
 @app.delete("/api/projects/{project_id}/tasks/{task_id}")

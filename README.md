@@ -11,6 +11,7 @@ Réduire drastiquement le temps de création d'un planning initial. PlanningEz f
 - **Interface moderne et intuitive** - Démarreur rapide et ergonomie pensée pour les chefs de projet
 - **Diagramme de Gantt interactif** - Glisser-déposer pour déplacer une tâche (contrainte « début au plus tôt ») ou étirer son bord droit pour changer la durée ; recalcul automatique du planning
 - **Édition en ligne** - Double-clic sur une cellule (nom, durée, avancement) du tableau pour l'éditer, création/suppression de tâches et de dépendances depuis l'interface
+- **Menu contextuel (clic droit)** - Sur une tâche : modifier, ajouter une sous-tâche, indenter/désindenter, définir la tâche mère (hiérarchie WBS), supprimer
 - **Gestion des dépendances** - Fin→Début, Début→Début, Fin→Fin, Début→Fin avec délais
 - **Calendriers flexibles** - Support multi-calendrier (entreprise, projet, équipe, sous-traitant)
 - **Gestion des ressources** - Assignation, disponibilité, coût, charge par ressource

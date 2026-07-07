@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { Task } from "../types";
 import type { TaskPatch } from "../api";
+import { depthOf } from "../hierarchy";
 
 interface Props {
   tasks: Task[];
@@ -8,11 +9,12 @@ interface Props {
   onAdd: () => void;
   onDelete: (task: Task) => void;
   onInline: (task: Task, patch: TaskPatch) => void;
+  onContext: (task: Task, x: number, y: number) => void;
 }
 
 type EditField = "name" | "duration" | "progress";
 
-export function TaskTable({ tasks, onEdit, onAdd, onDelete, onInline }: Props) {
+export function TaskTable({ tasks, onEdit, onAdd, onDelete, onInline, onContext }: Props) {
   const [editing, setEditing] = useState<{ id: string; field: EditField } | null>(null);
   const [value, setValue] = useState("");
 
@@ -89,9 +91,13 @@ export function TaskTable({ tasks, onEdit, onAdd, onDelete, onInline }: Props) {
                 <tr
                   key={t.task_id}
                   className={t.task_type === "summary" ? "summary-row" : ""}
+                  onContextMenu={(e) => {
+                    e.preventDefault();
+                    onContext(t, e.clientX, e.clientY);
+                  }}
                 >
                   <td
-                    style={{ paddingLeft: t.parent_id ? 24 : 8 }}
+                    style={{ paddingLeft: 8 + depthOf(tasks, t) * 20 }}
                     onDoubleClick={() => startEdit(t, "name", t.name)}
                   >
                     {isEditing(t, "name") ? cellInput(t, 200) : t.name}
