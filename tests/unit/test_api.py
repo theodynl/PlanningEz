@@ -216,3 +216,52 @@ def test_work_package_round_trip_via_api(client):
     created = client.post("/api/work-packages", json={"document": full})
     assert created.status_code == 200
     assert created.json()["name"] == full["name"]
+
+
+def test_work_package_create_with_chaining(client):
+    doc = {
+        "name": "Custom WP",
+        "code": "CUST-01",
+        "discipline": "engineering",
+        "tasks": [
+            {"name": "Step 1", "duration": 2},
+            {"name": "Step 2", "duration": 3},
+            {"name": "Step 3", "duration": 1},
+        ],
+    }
+    created = client.post("/api/work-packages", json={"document": doc, "chain_tasks": True}).json()
+    assert created["code"] == "CUST-01"
+    # Chaining creates 2 finish-to-start dependencies for 3 tasks.
+    assert len(created["dependencies"]) == 2
+    assert created["estimated_duration"] == 6
+
+
+def test_work_package_update(client):
+    created = client.post(
+        "/api/work-packages",
+        json={"document": {"name": "Editable", "code": "ED-1", "tasks": [{"name": "A", "duration": 1}]}},
+    ).json()
+    wp_id = created["work_package_id"]
+
+    updated = client.put(
+        f"/api/work-packages/{wp_id}",
+        json={"document": {"name": "Edited", "code": "ED-2", "tasks": [{"name": "A", "duration": 1}, {"name": "B", "duration": 2}]}},
+    )
+    assert updated.status_code == 200
+    body = updated.json()
+    assert body["work_package_id"] == wp_id  # identity preserved
+    assert body["name"] == "Edited"
+    assert body["code"] == "ED-2"
+    assert len(body["tasks"]) == 2
+
+
+def test_work_package_update_missing_404(client):
+    r = client.put("/api/work-packages/nope", json={"document": {"name": "X"}})
+    assert r.status_code == 404
+
+
+def test_work_package_delete(client):
+    created = client.post("/api/work-packages", json={"document": {"name": "Temp", "code": "T"}}).json()
+    wp_id = created["work_package_id"]
+    assert client.delete(f"/api/work-packages/{wp_id}").status_code == 200
+    assert client.get(f"/api/work-packages/{wp_id}").status_code == 404

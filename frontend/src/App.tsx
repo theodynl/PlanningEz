@@ -6,6 +6,7 @@ import { GanttChart } from "./components/GanttChart";
 import { TaskTable } from "./components/TaskTable";
 import { TaskEditor } from "./components/TaskEditor";
 import { NewProjectWizard } from "./components/NewProjectWizard";
+import { WorkPackageEditor } from "./components/WorkPackageEditor";
 import { ContextMenu, type MenuItem } from "./components/ContextMenu";
 import { descendantIds, candidateParents } from "./hierarchy";
 
@@ -21,6 +22,8 @@ export function App() {
   const [editorOpen, setEditorOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [menu, setMenu] = useState<{ task: Task; x: number; y: number } | null>(null);
+  const [wpEditorOpen, setWpEditorOpen] = useState(false);
+  const [editingWpId, setEditingWpId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const refreshLists = async () => {
@@ -147,6 +150,29 @@ export function App() {
 
   const openContext = (task: Task, x: number, y: number) => setMenu({ task, x, y });
 
+  // --- Work Package library management ---
+  const openNewWp = () => {
+    setEditingWpId(null);
+    setWpEditorOpen(true);
+  };
+  const openEditWp = (id: string) => {
+    setEditingWpId(id);
+    setWpEditorOpen(true);
+  };
+  const onWpSaved = async () => {
+    setWpEditorOpen(false);
+    await refreshLists();
+  };
+  const deleteWp = async (wp: WorkPackageSummary) => {
+    if (!confirm(`Supprimer le Work Package « ${wp.name} » ?`)) return;
+    try {
+      await api.deleteWorkPackage(wp.work_package_id);
+      await refreshLists();
+    } catch (e) {
+      setError((e as Error).message);
+    }
+  };
+
   const buildMenu = (task: Task): MenuItem[] => {
     if (!current) return [];
     const idx = current.tasks.findIndex((t) => t.task_id === task.task_id);
@@ -227,13 +253,27 @@ export function App() {
             ))}
           </ul>
 
-          <h3>Bibliothèque de Work Packages</h3>
+          <div className="wp-lib-head">
+            <h3>Bibliothèque de Work Packages</h3>
+            <button className="btn-link" onClick={openNewWp}>
+              + Nouveau
+            </button>
+          </div>
           <ul className="wp-list">
             {workPackages.map((wp) => (
               <li key={wp.work_package_id}>
-                <span className="wp-code">{wp.code}</span>
-                <span className="wp-name">{wp.name}</span>
-                <span className="wp-tasks">{wp.tasks}</span>
+                <button
+                  className="wp-item"
+                  title="Modifier"
+                  onClick={() => openEditWp(wp.work_package_id)}
+                >
+                  <span className="wp-code">{wp.code}</span>
+                  <span className="wp-name">{wp.name}</span>
+                  <span className="wp-tasks">{wp.tasks}</span>
+                </button>
+                <button className="wp-del" title="Supprimer" onClick={() => deleteWp(wp)}>
+                  ×
+                </button>
               </li>
             ))}
           </ul>
@@ -341,6 +381,15 @@ export function App() {
           y={menu.y}
           items={buildMenu(menu.task)}
           onClose={() => setMenu(null)}
+        />
+      )}
+
+      {wpEditorOpen && (
+        <WorkPackageEditor
+          workPackageId={editingWpId}
+          meta={meta}
+          onSaved={onWpSaved}
+          onClose={() => setWpEditorOpen(false)}
         />
       )}
     </div>

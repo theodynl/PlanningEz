@@ -102,6 +102,30 @@ export const api = {
 
   listWorkPackages: () => request<WorkPackageSummary[]>("/work-packages"),
 
+  getWorkPackage: (id: string) =>
+    request<Record<string, unknown>>(`/work-packages/${id}`),
+
+  createWorkPackage: (document: Record<string, unknown>, chainTasks: boolean) =>
+    request<Record<string, unknown>>("/work-packages", {
+      method: "POST",
+      body: JSON.stringify({ document, chain_tasks: chainTasks }),
+    }),
+
+  updateWorkPackage: (
+    id: string,
+    document: Record<string, unknown>,
+    chainTasks: boolean
+  ) =>
+    request<Record<string, unknown>>(`/work-packages/${id}`, {
+      method: "PUT",
+      body: JSON.stringify({ document, chain_tasks: chainTasks }),
+    }),
+
+  deleteWorkPackage: (id: string) =>
+    request<{ status: string }>(`/work-packages/${id}`, { method: "DELETE" }),
+
+  workPackageExportUrl: (id: string) => `${BASE}/work-packages/${id}/export`,
+
   exportUrl: (id: string, format: string) =>
     `${BASE}/projects/${id}/export/${format}`,
 };

@@ -364,10 +364,19 @@ def get_work_package(wp_id: str) -> Dict[str, Any]:
 @app.post("/api/work-packages")
 def create_work_package(req: WorkPackageImportRequest) -> Dict[str, Any]:
     """Create or import a Work Package from a JSON document."""
-    try:
-        wp = build_work_package(req.document)
-    except (KeyError, TypeError, ValueError) as exc:
-        raise HTTPException(status_code=400, detail=f"Invalid Work Package: {exc}") from exc
+    wp = _build_wp(req)
+    store.library.add(wp)
+    return to_dict(wp)
+
+
+@app.put("/api/work-packages/{wp_id}")
+def update_work_package(wp_id: str, req: WorkPackageImportRequest) -> Dict[str, Any]:
+    """Replace an existing Work Package with the supplied document."""
+    if store.library.get(wp_id) is None:
+        raise HTTPException(status_code=404, detail="Work Package not found")
+    document = dict(req.document)
+    document["work_package_id"] = wp_id  # preserve identity on update
+    wp = _build_wp(WorkPackageImportRequest(document=document, chain_tasks=req.chain_tasks))
     store.library.add(wp)
     return to_dict(wp)
 
@@ -379,6 +388,30 @@ def delete_work_package(wp_id: str) -> Dict[str, str]:
         raise HTTPException(status_code=404, detail="Work Package not found")
     store.library.remove(wp_id)
     return {"status": "deleted", "work_package_id": wp_id}
+
+
+def _build_wp(req: WorkPackageImportRequest):
+    """Build a Work Package from a request, optionally chaining its tasks."""
+    try:
+        wp = build_work_package(req.document)
+    except (KeyError, TypeError, ValueError) as exc:
+        raise HTTPException(status_code=400, detail=f"Invalid Work Package: {exc}") from exc
+    if req.chain_tasks:
+        _chain_work_package_tasks(wp)
+    wp.compute_estimated_duration()
+    return wp
+
+
+def _chain_work_package_tasks(wp) -> None:
+    """Rebuild sequential finish-to-start deps between non-milestone tasks."""
+    from planningez.core.models.task import TaskType
+    from planningez.core.models.dependency import Dependency
+
+    ordered = [t for t in wp.tasks if t.task_type != TaskType.MILESTONE]
+    wp.dependencies = [
+        Dependency(predecessor_id=a.task_id, successor_id=b.task_id)
+        for a, b in zip(ordered, ordered[1:])
+    ]
 
 
 @app.get("/api/work-packages/{wp_id}/export")
