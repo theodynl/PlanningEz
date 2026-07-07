@@ -31,6 +31,8 @@ MANIFEST
 #   before PyInstaller builds the exe, so as to inject date/other infos into it.
 *.manifest
 *.spec
+# …but keep the checked-in PyInstaller spec used by CI.
+!PlanningEz.spec
 
 # Installer logs
 pip-log.txt
@@ -216,3 +218,29 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# PlanningEz specific
+*.planez
+*.planez.bak
+config/user_settings.json
+resources/user_templates/
+dist_bundle/
+
+# Frontend
+node_modules/
+frontend/dist/
+
+# PyInstaller build output
+build/
+dist/
+dist_exe/
+build_exe/
+*.pyc
